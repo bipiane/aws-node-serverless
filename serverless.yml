@@ -51,3 +51,5 @@ resources:
           - AttributeName: primary_key
             KeyType: HASH
         TableName: ${self:service}-customerTable-${sls:stage}
+plugins:
+  - serverless-offline
