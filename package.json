@@ -1,0 +1,14 @@
+{
+  "name": "aws-node-serverless",
+  "version": "1.0.0",
+  "author": "",
+  "license": "ISC",
+  "main": "index.js",
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1479.0"
+  }
+}
