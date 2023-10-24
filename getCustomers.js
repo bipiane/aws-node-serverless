@@ -9,23 +9,18 @@ module.exports.getCustomers = async (event) => {
     const dynamodb = new AWS.DynamoDB.DocumentClient()
     const result = await dynamodb.scan(scanParams).promise()
 
-    if (result.Count === 0) {
-        return {
-            statusCode: 404
-        }
+    const bodyResult = {
+        total: result.Count,
+        items: result.Items.map(customer => {
+            return {
+                name: customer.primary_key,
+                email: customer.email
+            }
+        })
     }
 
     return {
         statusCode: 200,
-        body: JSON.stringify({
-            total: result.Count,
-            items: await result.Items.map(customer => {
-                return {
-                    name: customer.primary_key,
-                    email: customer.email
-                }
-            })
-        })
+        body: JSON.stringify(bodyResult)
     }
-
 }
