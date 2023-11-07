@@ -9,31 +9,33 @@ provider:
   region: sa-east-1 #São Paulo
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
-  iamRoleStatements:
-    - Effect: "Allow"
-      Action:
-        - "dynamodb:PutItem"
-        - "dynamodb:Get*"
-        - "dynamodb:Scan*"
-        - "dynamodb:UpdateItem"
-        - "dynamodb:DeleteItem"
-      Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action:
+            - "dynamodb:PutItem"
+            - "dynamodb:Get*"
+            - "dynamodb:Scan*"
+            - "dynamodb:UpdateItem"
+            - "dynamodb:DeleteItem"
+          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
 
 functions:
   api:
-    handler: index.handler
+    handler: src/index.handler
     events:
       - httpApi:
           path: /
           method: get
   createCustomer:
-    handler: createCustomer.createCustomer
+    handler: src/createCustomer.createCustomer
     events:
       - httpApi:
           path: /api/v1/customers
           method: post
   getCustomers:
-    handler: getCustomers.getCustomers
+    handler: src/getCustomers.getCustomers
     events:
       - httpApi:
           path: /api/v1/customers
