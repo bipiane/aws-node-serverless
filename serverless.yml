@@ -6,6 +6,7 @@ frameworkVersion: '3'
 provider:
   name: aws
   runtime: nodejs18.x
+  region: sa-east-1 #São Paulo
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
   iamRoleStatements:
