@@ -3,11 +3,15 @@ import AWS from 'aws-sdk';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {StatusCode} from './utils/messages';
 
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+/**
+ * Deletes a customer by email
+ * @param event
+ */
 module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.info('deleteCustomer: ', event);
   const customerEmail = event.pathParameters.email?.toLowerCase();
 
-  const dynamodb = new AWS.DynamoDB.DocumentClient();
   const deleteParams = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
     Key: {

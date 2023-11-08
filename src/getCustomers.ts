@@ -3,13 +3,17 @@ import AWS from 'aws-sdk';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {StatusCode} from './utils/messages';
 
+const dynamodb = new AWS.DynamoDB.DocumentClient();
+/**
+ * Gets all customers
+ * @param event
+ */
 module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.info('getCustomers: ', event);
   const scanParams = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
   };
 
-  const dynamodb = new AWS.DynamoDB.DocumentClient();
   const result = await dynamodb.scan(scanParams).promise();
 
   const bodyResult = {
