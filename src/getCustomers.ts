@@ -1,7 +1,8 @@
 'use strict'
-const AWS = require('aws-sdk')
+import AWS from 'aws-sdk';
+import {APIGatewayProxyEvent, APIGatewayProxyResult} from "aws-lambda";
 
-module.exports.getCustomers = async (event) => {
+module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
     console.info('getCustomers: ', event);
     const scanParams = {
         TableName: process.env.DYNAMODB_CUSTOMER_TABLE
