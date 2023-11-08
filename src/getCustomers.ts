@@ -1,6 +1,7 @@
 'use strict';
 import AWS from 'aws-sdk';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {StatusCode} from './utils/messages';
 
 module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.info('getCustomers: ', event);
@@ -15,14 +16,14 @@ module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGa
     total: result.Count,
     items: result.Items.map(customer => {
       return {
-        name: customer.primary_key,
-        email: customer.email,
+        email: customer.primary_key,
+        name: customer.name,
       };
     }),
   };
 
   return {
-    statusCode: 200,
+    statusCode: StatusCode.OK,
     body: JSON.stringify(bodyResult),
   };
 };

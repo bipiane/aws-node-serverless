@@ -40,6 +40,12 @@ functions:
       - httpApi:
           path: /api/v1/customers
           method: get
+  deleteCustomer:
+    handler: src/deleteCustomer.deleteCustomer
+    events:
+      - httpApi:
+          path: /api/v1/customers/{email}
+          method: delete
 
 resources:
   Resources:

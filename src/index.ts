@@ -1,9 +1,10 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {StatusCode} from './utils/messages';
 
 module.exports.handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.info('index: ', event);
   return {
-    statusCode: 200,
+    statusCode: StatusCode.OK,
     body: JSON.stringify(
       {
         message: 'Go Serverless v3.0! Your function executed successfully!',
