@@ -9,8 +9,10 @@
     "local": "serverless offline",
     "deploy": "serverless deploy",
     "destroy": "serverless remove",
-    "test:tsc": "tsc --noEmit",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "clean": "npm-run-all clean:*",
+    "clean:prettier": "prettier --config ./.prettierrc --write './**/*.@(ts|js|json)' './*.@(ts|js|json)'",
+    "prepare": "husky install"
   },
   "dependencies": {
     "aws-sdk": "^2.1479.0"
@@ -18,6 +20,9 @@
   "devDependencies": {
     "@types/aws-lambda": "^8.10.126",
     "@types/node": "^20.9.0",
+    "husky": "^8.0.3",
+    "npm-run-all": "^4.1.5",
+    "prettier": "^3.0.3",
     "serverless-offline": "^13.2.0",
     "serverless-plugin-typescript": "^2.1.5",
     "typescript": "^5.2.2"

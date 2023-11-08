@@ -2,9 +2,7 @@
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
-    "lib": [
-      "esnext"
-    ],
+    "lib": ["esnext"],
     "module": "commonjs",
     "moduleResolution": "node",
     "noUnusedLocals": true,
@@ -13,7 +11,5 @@
     "sourceMap": true,
     "target": "esnext"
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }
