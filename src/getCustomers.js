@@ -2,6 +2,7 @@
 const AWS = require('aws-sdk')
 
 module.exports.getCustomers = async (event) => {
+    console.info('getCustomers: ', event);
     const scanParams = {
         TableName: process.env.DYNAMODB_CUSTOMER_TABLE
     }

@@ -7,6 +7,7 @@ const AWS = require('aws-sdk');
  * @returns {Promise<{statusCode: number}>}
  */
 module.exports.createCustomer = async (event) => {
+    console.info('createCustomer: ', event);
     const body = JSON.parse(Buffer.from(event.body, 'base64').toString());
     const dynamoDb = new AWS.DynamoDB.DocumentClient();
     const putParams = {
