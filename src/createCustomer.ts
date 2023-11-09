@@ -13,7 +13,7 @@ const dynamoDb = new AWS.DynamoDB.DocumentClient();
  */
 module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   console.info('createCustomer: ', event);
-  const body: Customer = JSON.parse(Buffer.from(event.body, 'base64').toString());
+  const body: Customer = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body);
   const putParams: DocumentClient.PutItemInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
     Item: {
