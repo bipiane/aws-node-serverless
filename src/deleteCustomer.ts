@@ -1,9 +1,9 @@
-'use strict';
-import AWS from 'aws-sdk';
+import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
+import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {StatusCode} from './utils/messages';
 
-const dynamodb = new AWS.DynamoDB.DocumentClient();
+const dynamodb = DynamoDBDocument.from(new DynamoDB());
 /**
  * Deletes a customer by email
  * @param event
@@ -19,11 +19,10 @@ module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<API
     },
   };
 
-  const deletedCustomer = await dynamodb.delete(deleteParams).promise();
+  await dynamodb.delete(deleteParams);
 
   const bodyResult = {
     message: `Customer '${customerEmail}' deleted`,
-    data: deletedCustomer.$response.data,
   };
 
   return {
