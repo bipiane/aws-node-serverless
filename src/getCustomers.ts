@@ -28,6 +28,7 @@ module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGa
 
   return {
     statusCode: StatusCode.OK,
+    headers: {'content-type': 'application/json'},
     body: JSON.stringify(bodyResult),
   };
 };

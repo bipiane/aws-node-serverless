@@ -30,6 +30,7 @@ module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<API
 
   return {
     statusCode: StatusCode.CREATED,
+    headers: {'content-type': 'application/json'},
     body: JSON.stringify(bodyResult),
   };
 };

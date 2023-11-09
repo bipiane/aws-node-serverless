@@ -28,6 +28,7 @@ module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<API
 
   return {
     statusCode: StatusCode.OK,
+    headers: {'content-type': 'application/json'},
     body: JSON.stringify(bodyResult),
   };
 };
