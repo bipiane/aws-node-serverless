@@ -1,11 +1,10 @@
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
 import {Customer} from './model/Customer';
 import {StatusCode} from './utils/messages';
 
-const dynamoDb = DynamoDBDocument.from(new DynamoDB());
+import DynamoDBClient from './services/dynamodb';
+
 /**
  * Creates a new customer.
  * Usage: curl -X POST -d '{"name":"Peter Parker","email":"peter@parker.com"}' --url http://localhost:3000/api/v1/customers
@@ -21,7 +20,7 @@ module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<API
       name: body.name,
     },
   };
-  await dynamoDb.put(putParams);
+  await DynamoDBClient.put(putParams);
 
   const bodyResult = {
     message: 'Customer created',

@@ -19,7 +19,7 @@ provider:
             - "dynamodb:Scan*"
             - "dynamodb:UpdateItem"
             - "dynamodb:DeleteItem"
-          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:service}-customerTable-${sls:stage}
+          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
 
 functions:
   api:
@@ -59,7 +59,19 @@ resources:
         KeySchema:
           - AttributeName: primary_key
             KeyType: HASH
-        TableName: ${self:service}-customerTable-${sls:stage}
+        TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+
 plugins:
   - serverless-plugin-typescript
   - serverless-offline
+  - serverless-dynamodb
+
+custom:
+  dynamodb:
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      migrate: true
+      noStart: true

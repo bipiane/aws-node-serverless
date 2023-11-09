@@ -1,9 +1,7 @@
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {StatusCode} from './utils/messages';
 
-const dynamodb = DynamoDBDocument.from(new DynamoDB());
+import DynamoDBClient from './services/dynamodb';
 /**
  * Gets all customers
  * @param event
@@ -14,7 +12,7 @@ module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGa
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
   };
 
-  const result = await dynamodb.scan(scanParams);
+  const result = await DynamoDBClient.scan(scanParams);
 
   const bodyResult = {
     total: result.Count,
