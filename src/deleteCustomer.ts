@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {DeleteCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/DeleteCommand';
-import {StatusCode} from './utils/messages';
+import {ResponseData} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
 /**
@@ -8,7 +8,6 @@ import DynamoDBClient from './services/dynamodb';
  * @param event
  */
 module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('deleteCustomer: ', event);
   const customerEmail = event.pathParameters.email?.toLowerCase();
 
   const deleteParams: DeleteCommandInput = {
@@ -24,9 +23,5 @@ module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<API
     message: `Customer '${customerEmail}' deleted`,
   };
 
-  return {
-    statusCode: StatusCode.OK,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };

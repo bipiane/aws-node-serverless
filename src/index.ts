@@ -2,7 +2,6 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {StatusCode} from './utils/messages';
 
 module.exports.handler = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('index: ', event);
   return {
     statusCode: StatusCode.OK,
     headers: {'content-type': 'application/json'},

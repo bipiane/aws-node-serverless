@@ -1,7 +1,7 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
 import {Customer} from './model/Customer';
-import {StatusCode} from './utils/messages';
+import {ResponseData, StatusCode} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
 
@@ -11,7 +11,6 @@ import DynamoDBClient from './services/dynamodb';
  * @param event
  */
 module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('createCustomer: ', event);
   const body: Customer = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body);
   const putParams: PutCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
@@ -23,12 +22,8 @@ module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<API
   await DynamoDBClient.put(putParams);
 
   const bodyResult = {
-    message: 'Customer created',
+    message: `Customer '${body.email}' created.`,
   };
 
-  return {
-    statusCode: StatusCode.CREATED,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };

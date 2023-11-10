@@ -1,15 +1,14 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {ScanCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/ScanCommand';
-import {StatusCode} from './utils/messages';
+import {ResponseData} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
 
 /**
  * Gets all customers
- * @param event
+ * @param _event
  */
-module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('getCustomers: ', event);
+module.exports.getCustomers = async (_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
   const scanParams: ScanCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
   };
@@ -26,9 +25,5 @@ module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGa
     }),
   };
 
-  return {
-    statusCode: StatusCode.OK,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };
