@@ -1,4 +1,5 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
+import {DeleteCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/DeleteCommand';
 import {StatusCode} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
@@ -10,10 +11,10 @@ module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<API
   console.info('deleteCustomer: ', event);
   const customerEmail = event.pathParameters.email?.toLowerCase();
 
-  const deleteParams = {
+  const deleteParams: DeleteCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
     Key: {
-      primary_key: customerEmail,
+      email: customerEmail,
     },
   };
 

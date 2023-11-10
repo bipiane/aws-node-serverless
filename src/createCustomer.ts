@@ -16,7 +16,7 @@ module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<API
   const putParams: PutCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
     Item: {
-      primary_key: body.email?.toLowerCase(),
+      email: body.email?.toLowerCase(),
       name: body.name,
     },
   };

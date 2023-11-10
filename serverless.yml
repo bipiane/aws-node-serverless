@@ -53,11 +53,11 @@ resources:
       Type: AWS::DynamoDB::Table
       Properties:
         AttributeDefinitions:
-          - AttributeName: primary_key
+          - AttributeName: email
             AttributeType: S
         BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: primary_key
+          - AttributeName: email
             KeyType: HASH
         TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
 
