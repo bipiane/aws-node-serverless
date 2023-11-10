@@ -24,24 +24,31 @@ provider:
 functions:
   api:
     handler: src/index.handler
+    reservedConcurrency: 1
     events:
       - httpApi:
           path: /
           method: get
   createCustomer:
     handler: src/createCustomer.createCustomer
+    description: Creates a new customer
+    reservedConcurrency: 3
     events:
       - httpApi:
           path: /api/v1/customers
           method: post
   getCustomers:
     handler: src/getCustomers.getCustomers
+    description: Gets all customers
+    reservedConcurrency: 3
     events:
       - httpApi:
           path: /api/v1/customers
           method: get
   deleteCustomer:
     handler: src/deleteCustomer.deleteCustomer
+    description: Disables a customer by email
+    reservedConcurrency: 3
     events:
       - httpApi:
           path: /api/v1/customers/{email}
