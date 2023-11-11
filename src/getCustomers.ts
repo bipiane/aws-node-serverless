@@ -3,6 +3,7 @@ import {ScanCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/ScanCo
 import {ResponseData} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
+import {CustomerDB} from './model/Customer';
 
 /**
  * Gets all customers
@@ -17,10 +18,11 @@ module.exports.getCustomers = async (_event: APIGatewayProxyEvent): Promise<APIG
 
   const bodyResult = {
     total: result.Count,
-    items: result.Items.map(customer => {
+    items: result.Items.map((customer: CustomerDB): CustomerDB => {
       return {
         email: customer.email,
         name: customer.name,
+        enabled: customer.enabled || false,
       };
     }),
   };

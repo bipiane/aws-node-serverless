@@ -1,6 +1,6 @@
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
-import {Customer} from './model/Customer';
+import {CustomerDB, CustomerDTO} from './model/Customer';
 import {ResponseData, StatusCode} from './utils/messages';
 
 import DynamoDBClient from './services/dynamodb';
@@ -11,7 +11,9 @@ import DynamoDBClient from './services/dynamodb';
  * @param event
  */
 module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  const body: Customer = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body);
+  const body: CustomerDTO = JSON.parse(
+    event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body,
+  );
 
   if (!body?.email || !body?.name) {
     return new ResponseData({error: 'Email and name are required.'}, StatusCode.CONFLICT);
@@ -23,18 +25,22 @@ module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<API
     Key: {
       email: body.email,
     },
-    ProjectionExpression: 'email',
+    ProjectionExpression: 'enabled',
   });
-  if (existCustomer.Item) {
+
+  if (existCustomer.Item && existCustomer.Item.enabled) {
     return new ResponseData({error: `Customer '${body.email}' already created.`}, StatusCode.CONFLICT);
   }
 
+  const newCustomer: CustomerDB = {
+    email: body.email,
+    name: body.name,
+    enabled: true,
+  };
+
   const putParams: PutCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
-    Item: {
-      email: body.email,
-      name: body.name,
-    },
+    Item: newCustomer,
   };
   await DynamoDBClient.put(putParams);
 
