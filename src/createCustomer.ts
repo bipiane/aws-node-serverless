@@ -1,35 +1,52 @@
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
 import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
-import {Customer} from './model/Customer';
-import {StatusCode} from './utils/messages';
+import {CustomerDB, CustomerDTO} from './model/Customer';
+import {ResponseData, StatusCode} from './utils/messages';
 
-const dynamoDb = DynamoDBDocument.from(new DynamoDB());
+import DynamoDBClient from './services/dynamodb';
+
 /**
  * Creates a new customer.
  * Usage: curl -X POST -d '{"name":"Peter Parker","email":"peter@parker.com"}' --url http://localhost:3000/api/v1/customers
  * @param event
  */
 module.exports.createCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('createCustomer: ', event);
-  const body: Customer = JSON.parse(event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body);
+  const body: CustomerDTO = JSON.parse(
+    event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body,
+  );
+
+  if (!body?.email || !body?.name) {
+    return new ResponseData({error: 'Email and name are required.'}, StatusCode.CONFLICT);
+  }
+  body.email = body?.email?.toLowerCase();
+
+  const existCustomer = await DynamoDBClient.get({
+    TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
+    Key: {
+      email: body.email,
+    },
+    ProjectionExpression: 'enabled',
+  });
+
+  if (existCustomer.Item && existCustomer.Item.enabled) {
+    return new ResponseData({error: `Customer '${body.email}' already created.`}, StatusCode.CONFLICT);
+  }
+
+  const newCustomer: CustomerDB = {
+    email: body.email,
+    name: body.name,
+    enabled: true,
+  };
+
   const putParams: PutCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
-    Item: {
-      primary_key: body.email?.toLowerCase(),
-      name: body.name,
-    },
+    Item: newCustomer,
   };
-  await dynamoDb.put(putParams);
+  await DynamoDBClient.put(putParams);
 
   const bodyResult = {
-    message: 'Customer created',
+    message: `Customer '${body.email}' created.`,
   };
 
-  return {
-    statusCode: StatusCode.CREATED,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };

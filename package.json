@@ -6,11 +6,13 @@
   "main": "src/index.js",
   "scripts": {
     "build": "rm -rf ./lib && tsc",
-    "local": "serverless offline",
+    "local": "serverless offline start",
+    "prelocal": "cd dynamodb && docker-compose up -d",
     "deploy": "serverless deploy",
     "destroy": "serverless remove",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "eslint './src' --ext .ts",
     "clean": "npm-run-all clean:*",
+    "clean:eslint": "eslint '.' --ext .ts --fix",
     "clean:prettier": "prettier --config ./.prettierrc --write './**/*.@(ts|js|json)' './*.@(ts|js|json)'",
     "prepare": "husky install"
   },
@@ -21,10 +23,14 @@
     "@aws-sdk/lib-dynamodb": "^3.445.0",
     "@types/aws-lambda": "^8.10.126",
     "@types/node": "^20.9.0",
+    "@typescript-eslint/eslint-plugin": "^6.10.0",
+    "@typescript-eslint/parser": "^6.10.0",
+    "eslint": "^8.53.0",
     "husky": "^8.0.3",
     "npm-run-all": "^4.1.5",
     "prettier": "^3.0.3",
-    "serverless-offline": "^13.2.0",
+    "serverless-dynamodb": "^0.2.47",
+    "serverless-offline": "^13.2.1",
     "serverless-plugin-typescript": "^2.1.5",
     "typescript": "^5.2.2"
   }

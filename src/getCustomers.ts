@@ -1,34 +1,31 @@
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {StatusCode} from './utils/messages';
+import {ScanCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/ScanCommand';
+import {ResponseData} from './utils/messages';
 
-const dynamodb = DynamoDBDocument.from(new DynamoDB());
+import DynamoDBClient from './services/dynamodb';
+import {CustomerDB} from './model/Customer';
+
 /**
  * Gets all customers
- * @param event
+ * @param _event
  */
-module.exports.getCustomers = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('getCustomers: ', event);
-  const scanParams = {
+module.exports.getCustomers = async (_event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
+  const scanParams: ScanCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
   };
 
-  const result = await dynamodb.scan(scanParams);
+  const result = await DynamoDBClient.scan(scanParams);
 
   const bodyResult = {
     total: result.Count,
-    items: result.Items.map(customer => {
+    items: result.Items.map((customer: CustomerDB): CustomerDB => {
       return {
-        email: customer.primary_key,
+        email: customer.email,
         name: customer.name,
+        enabled: customer.enabled || false,
       };
     }),
   };
 
-  return {
-    statusCode: StatusCode.OK,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };

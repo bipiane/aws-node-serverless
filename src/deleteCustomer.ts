@@ -1,33 +1,33 @@
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {DynamoDB} from '@aws-sdk/client-dynamodb';
 import {APIGatewayProxyEvent, APIGatewayProxyResult} from 'aws-lambda';
-import {StatusCode} from './utils/messages';
+import {ResponseData} from './utils/messages';
 
-const dynamodb = DynamoDBDocument.from(new DynamoDB());
+import DynamoDBClient from './services/dynamodb';
+import {UpdateCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/UpdateCommand';
+
 /**
- * Deletes a customer by email
+ * Disables a customer by email
  * @param event
  */
 module.exports.deleteCustomer = async (event: APIGatewayProxyEvent): Promise<APIGatewayProxyResult> => {
-  console.info('deleteCustomer: ', event);
   const customerEmail = event.pathParameters.email?.toLowerCase();
 
-  const deleteParams = {
+  const updateParams: UpdateCommandInput = {
     TableName: process.env.DYNAMODB_CUSTOMER_TABLE,
     Key: {
-      primary_key: customerEmail,
+      email: customerEmail,
+    },
+    AttributeUpdates: {
+      enabled: {
+        Value: false,
+      },
     },
   };
 
-  await dynamodb.delete(deleteParams);
+  await DynamoDBClient.update(updateParams);
 
   const bodyResult = {
-    message: `Customer '${customerEmail}' deleted`,
+    message: `Customer '${customerEmail}' disabled`,
   };
 
-  return {
-    statusCode: StatusCode.OK,
-    headers: {'content-type': 'application/json'},
-    body: JSON.stringify(bodyResult),
-  };
+  return new ResponseData(bodyResult);
 };
