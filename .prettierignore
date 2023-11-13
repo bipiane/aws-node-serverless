@@ -1,4 +1,5 @@
 # Ignore artifacts:
 .build
 .serverless
+coverage
 lib
