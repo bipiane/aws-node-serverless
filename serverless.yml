@@ -30,7 +30,7 @@ functions:
           path: /
           method: get
   createCustomer:
-    handler: src/createCustomer.createCustomer
+    handler: src/handler.createCustomer
     description: Creates a new customer
     reservedConcurrency: 3
     events:
@@ -38,7 +38,7 @@ functions:
           path: /api/v1/customers
           method: post
   getCustomers:
-    handler: src/getCustomers.getCustomers
+    handler: src/handler.getAllCustomer
     description: Gets all customers
     reservedConcurrency: 3
     events:
@@ -46,7 +46,7 @@ functions:
           path: /api/v1/customers
           method: get
   deleteCustomer:
-    handler: src/deleteCustomer.deleteCustomer
+    handler: src/handler.deleteCustomer
     description: Disables a customer by email
     reservedConcurrency: 3
     events:

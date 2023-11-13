@@ -4,6 +4,7 @@ export enum StatusCode {
   OK = 200,
   CREATED = 201,
   CONFLICT = 409,
+  INTERNAL_ERROR = 500,
 }
 
 export class ResponseData implements APIGatewayProxyResult {
