@@ -1,17 +1,11 @@
 import {CustomerDB, CustomerListDB} from '../model/Customer';
-import {DynamoDBDocument} from '@aws-sdk/lib-dynamodb';
-import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
-import {ScanCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/ScanCommand';
-import {UpdateCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/UpdateCommand';
-import DynamoDBClient from './dynamodb';
+import {CustomerDynamoDB, IDatabase} from './database';
 
 export class CustomerService {
-  private readonly tableName: string;
-  private customers: DynamoDBDocument;
+  private database: IDatabase;
 
   constructor() {
-    this.tableName = process.env.DYNAMODB_CUSTOMER_TABLE;
-    this.customers = DynamoDBClient;
+    this.database = new CustomerDynamoDB();
   }
 
   /**
@@ -20,11 +14,7 @@ export class CustomerService {
    */
   async createCustomer(params: CustomerDB): Promise<boolean> {
     try {
-      const putParams: PutCommandInput = {
-        TableName: this.tableName,
-        Item: params,
-      };
-      await this.customers.put(putParams);
+      await this.database.save(params);
       return true;
     } catch (err) {
       console.error(err);
@@ -39,14 +29,10 @@ export class CustomerService {
    */
   async existsCustomer(email: string): Promise<boolean> {
     try {
-      const customer = await DynamoDBClient.get({
-        TableName: this.tableName,
-        Key: {
-          email: email,
-        },
+      const customer = await this.database.findOne(email, {
         ProjectionExpression: 'enabled',
       });
-      return customer.Item && customer.Item.enabled === true;
+      return customer && customer.enabled === true;
     } catch (err) {
       console.error(err);
       throw err;
@@ -58,21 +44,11 @@ export class CustomerService {
    */
   async findAllCustomers(): Promise<CustomerListDB> {
     try {
-      const scanParams: ScanCommandInput = {
-        TableName: this.tableName,
-      };
-
-      const result = await DynamoDBClient.scan(scanParams);
+      const result = await this.database.findAndCount();
 
       return {
-        total: result.Count,
-        items: result.Items.map((customer: CustomerDB): CustomerDB => {
-          return {
-            email: customer.email,
-            name: customer.name,
-            enabled: customer.enabled || false,
-          };
-        }),
+        items: result[0],
+        total: result[1],
       };
     } catch (err) {
       console.error(err);
@@ -88,19 +64,7 @@ export class CustomerService {
    */
   async disableCustomer(email: string): Promise<boolean> {
     try {
-      const updateParams: UpdateCommandInput = {
-        TableName: this.tableName,
-        Key: {
-          email: email,
-        },
-        AttributeUpdates: {
-          enabled: {
-            Value: false,
-          },
-        },
-      };
-
-      await DynamoDBClient.update(updateParams);
+      await this.database.update(email, {enabled: false});
       return true;
     } catch (err) {
       console.error(err);
