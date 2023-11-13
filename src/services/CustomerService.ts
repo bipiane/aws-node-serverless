@@ -17,7 +17,6 @@ export class CustomerService {
   /**
    * Creates a new customer
    * @param params
-   * @protected
    */
   async createCustomer(params: CustomerDB): Promise<boolean> {
     try {
@@ -55,7 +54,7 @@ export class CustomerService {
   }
 
   /**
-   *
+   * Gets all customers
    */
   async findAllCustomers(): Promise<CustomerListDB> {
     try {
@@ -83,7 +82,7 @@ export class CustomerService {
   }
 
   /**
-   *
+   * Disables a customer by email
    * @param email
    * @protected
    */

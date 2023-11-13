@@ -23,6 +23,7 @@ export class CustomerController {
         event.isBase64Encoded ? Buffer.from(event.body, 'base64').toString() : event.body,
       );
 
+      //@TODO schema validation should be done using AWS ApiGateway openapi https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-method-request-validation.html
       if (!body?.email || !body?.name) {
         return new ResponseData({error: 'Email and name are required.'}, StatusCode.CONFLICT);
       }
@@ -72,14 +73,19 @@ export class CustomerController {
    * @param _context
    */
   async delete(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
-    const customerEmail = event.pathParameters.email?.toLowerCase();
+    try {
+      const customerEmail = event.pathParameters.email?.toLowerCase();
 
-    await this.customerService.disableCustomer(customerEmail);
+      await this.customerService.disableCustomer(customerEmail);
 
-    const bodyResult = {
-      message: `Customer '${customerEmail}' disabled`,
-    };
+      const bodyResult = {
+        message: `Customer '${customerEmail}' disabled`,
+      };
 
-    return new ResponseData(bodyResult);
+      return new ResponseData(bodyResult);
+    } catch (err) {
+      console.error(err);
+      return new ResponseData({error: `Error disabling customer.`}, StatusCode.INTERNAL_ERROR);
+    }
   }
 }

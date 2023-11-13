@@ -2,7 +2,7 @@ import {APIGatewayProxyResult} from 'aws-lambda';
 import lambdaTester from 'lambda-tester';
 import {CustomerDB, CustomerListDB} from '../src/model/Customer';
 import {CustomerService} from '../src/services/CustomerService';
-import {createCustomer, getAllCustomer} from '../src/handler';
+import {createCustomer, deleteCustomer, getAllCustomer} from '../src/handler';
 import CustomerServiceMock from './CustomerService.mock';
 
 jest.mock('../src/services/CustomerService');
@@ -148,5 +148,39 @@ describe('getAll [GET]', () => {
       const body = JSON.parse(result.body);
       expect(body).toStrictEqual({error: `Error querying customers.`});
     });
+  });
+});
+
+describe('delete [DELETE]', () => {
+  it('success', () => {
+    jest.spyOn(CustomerService.prototype, 'disableCustomer').mockImplementation((email: string): Promise<boolean> => {
+      return new Promise(resolve => {
+        resolve(email === 'peter@parker.com');
+      });
+    });
+
+    return lambdaTester(deleteCustomer)
+      .event({pathParameters: {email: 'peter@parker.com'}})
+      .expectResult((result: APIGatewayProxyResult) => {
+        expect(result.statusCode).toStrictEqual(200);
+        const body = JSON.parse(result.body);
+        expect(body).toStrictEqual({
+          message: `Customer 'peter@parker.com' disabled`,
+        });
+      });
+  });
+
+  it('error', () => {
+    jest.spyOn(CustomerService.prototype, 'disableCustomer').mockImplementation((_email: string): Promise<boolean> => {
+      throw CustomerServiceMock.disableCustomerError;
+    });
+
+    return lambdaTester(deleteCustomer)
+      .event({pathParameters: {email: 'peter@parker.com'}})
+      .expectResult((result: APIGatewayProxyResult) => {
+        expect(result.statusCode).toStrictEqual(500);
+        const body = JSON.parse(result.body);
+        expect(body).toStrictEqual({error: `Error disabling customer.`});
+      });
   });
 });

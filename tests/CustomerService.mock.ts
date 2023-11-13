@@ -24,9 +24,12 @@ const findAllCustomers: CustomerListDB = {
 
 const findAllCustomersError = new Error('test find error');
 
+const disableCustomerError = new Error('test error updating customer');
+
 export default {
   createCustomer,
   createCustomerError,
   findAllCustomers,
   findAllCustomersError,
+  disableCustomerError,
 };
