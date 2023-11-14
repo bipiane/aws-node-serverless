@@ -29,9 +29,6 @@ functions:
       - httpApi:
           path: /
           method: get
-    deploymentSettings:
-      type: Canary10Percent5Minutes
-      alias: Live
   createCustomer:
     handler: src/handler.createCustomer
     description: Creates a new customer
@@ -40,9 +37,13 @@ functions:
       - httpApi:
           path: /api/v1/customers
           method: post
+    alarms:
+      - FunctionErrors
     deploymentSettings:
       type: Canary10Percent5Minutes
       alias: Live
+      alarms:
+        - CreateCustomerFunctionErrorsAlarm
   getCustomers:
     handler: src/handler.getAllCustomer
     description: Gets all customers
@@ -51,9 +52,13 @@ functions:
       - httpApi:
           path: /api/v1/customers
           method: get
+    alarms:
+      - FunctionErrors
     deploymentSettings:
       type: Canary10Percent5Minutes
       alias: Live
+      alarms:
+        - GetCustomersFunctionErrorsAlarm
   deleteCustomer:
     handler: src/handler.deleteCustomer
     description: Disables a customer by email
@@ -62,9 +67,13 @@ functions:
       - httpApi:
           path: /api/v1/customers/{email}
           method: delete
+    alarms:
+      - FunctionErrors
     deploymentSettings:
       type: Canary10Percent5Minutes
       alias: Live
+      alarms:
+        - DeleteCustomerFunctionErrorsAlarm
 
 resources:
   Resources:
@@ -85,8 +94,20 @@ plugins:
   - serverless-offline
   - serverless-dynamodb
   - serverless-plugin-canary-deployments
+  - serverless-plugin-aws-alerts
 
 custom:
+  alerts:
+    dashboards: true
+    definitions:
+      FunctionErrors:
+        namespace: 'AWS/Lambda'
+        metric: Errors
+        threshold: 1
+        statistic: Minimum
+        period: 60
+        evaluationPeriods: 1
+        comparisonOperator: GreaterThanOrEqualToThreshold
   dynamodb:
     stages:
       - dev

@@ -12,9 +12,16 @@
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{node-serverless}}/api/v1/customers",
+          "raw": "{{node-serverless}}/api/v1/customers?alert_status=alarm",
           "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers"]
+          "path": ["api", "v1", "customers"],
+          "query": [
+            {
+              "key": "alert_status",
+              "value": "alarm",
+              "description": "'alarm' to throw an exception"
+            }
+          ]
         }
       },
       "response": []
@@ -47,9 +54,9 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "{{node-serverless}}/api/v1/customers/tony@stark2.com",
+          "raw": "{{node-serverless}}/api/v1/customers/tony@stark.com",
           "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers", "tony@stark2.com"]
+          "path": ["api", "v1", "customers", "tony@stark.com"]
         }
       },
       "response": []

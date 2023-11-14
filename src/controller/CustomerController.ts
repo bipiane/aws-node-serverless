@@ -58,6 +58,11 @@ export class CustomerController {
    * @param _context
    */
   async getAll(_event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
+    // Throw test exception
+    if (_event?.queryStringParameters?.alert_status === 'alarm') {
+      throw new Error('Error test lambada!');
+    }
+
     try {
       const bodyResult = await this.customerService.findAllCustomers();
       return new ResponseData(bodyResult);
