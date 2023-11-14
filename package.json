@@ -8,7 +8,7 @@
     "build": "rm -rf ./lib && tsc",
     "local": "serverless offline start",
     "prelocal": "cd dynamodb && docker-compose up -d",
-    "deploy": "serverless deploy",
+    "deploy": "serverless deploy --stage dev",
     "destroy": "serverless remove",
     "test": "npm-run-all test:*",
     "test:eslint": "eslint './src' --ext .ts",
@@ -39,6 +39,7 @@
     "prettier": "^3.0.3",
     "serverless-dynamodb": "^0.2.47",
     "serverless-offline": "^13.2.1",
+    "serverless-plugin-canary-deployments": "^0.8.0",
     "serverless-plugin-typescript": "^2.1.5",
     "ts-jest": "^29.1.1",
     "typescript": "^5.2.2"

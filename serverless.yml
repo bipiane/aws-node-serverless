@@ -29,6 +29,9 @@ functions:
       - httpApi:
           path: /
           method: get
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
   createCustomer:
     handler: src/handler.createCustomer
     description: Creates a new customer
@@ -37,6 +40,9 @@ functions:
       - httpApi:
           path: /api/v1/customers
           method: post
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
   getCustomers:
     handler: src/handler.getAllCustomer
     description: Gets all customers
@@ -45,6 +51,9 @@ functions:
       - httpApi:
           path: /api/v1/customers
           method: get
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
   deleteCustomer:
     handler: src/handler.deleteCustomer
     description: Disables a customer by email
@@ -53,6 +62,9 @@ functions:
       - httpApi:
           path: /api/v1/customers/{email}
           method: delete
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
 
 resources:
   Resources:
@@ -72,6 +84,7 @@ plugins:
   - serverless-plugin-typescript
   - serverless-offline
   - serverless-dynamodb
+  - serverless-plugin-canary-deployments
 
 custom:
   dynamodb:
