@@ -117,13 +117,13 @@ export class CustomerController {
     try {
       const username = event.pathParameters.username?.toLowerCase();
 
-      await this.customerService.disableCustomer(username);
+      const disabled = await this.customerService.disableCustomer(username);
 
-      const bodyResult = {
-        message: `Customer '${username}' disabled`,
-      };
+      if (!disabled) {
+        return new ResponseData({error: `Customer '${username}' not found.`}, StatusCode.NOT_FOUND);
+      }
 
-      return new ResponseData(bodyResult);
+      return new ResponseData({message: `Customer '${username}' disabled`});
     } catch (err) {
       console.error(err);
       return new ResponseData({error: `Error disabling customer.`}, StatusCode.INTERNAL_ERROR);

@@ -96,9 +96,13 @@ export class CustomerService {
       await this.database.update(username, {enabled: false});
       return true;
     } catch (err) {
-      console.error(err);
+      if (err.name === 'ConditionalCheckFailedException') {
+        return false;
+      } else {
+        console.error(err);
 
-      throw err;
+        throw err;
+      }
     }
   }
 }
