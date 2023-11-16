@@ -35,7 +35,6 @@ export class CustomerController {
       }
 
       const existsEmail = await this.customerService.findCustomer({email: body.email});
-      console.log('>> existsEmail: ', existsEmail);
       if (existsEmail && existsEmail.enabled === true) {
         return new ResponseData({error: `Customer with email '${body.email}' already created.`}, StatusCode.CONFLICT);
       }
