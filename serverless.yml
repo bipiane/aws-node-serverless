@@ -46,11 +46,11 @@ functions:
         - CreateCustomerFunctionErrorsAlarm
   getCustomer:
     handler: src/handler.getCustomer
-    description: Gets a customer by username
+    description: Gets a customer by uuid
     reservedConcurrency: 3
     events:
       - httpApi:
-          path: /api/v1/customers/{username}
+          path: /api/v1/customers/{uuid}
           method: get
     alarms:
       - FunctionErrors
@@ -76,11 +76,11 @@ functions:
         - GetCustomersFunctionErrorsAlarm
   deleteCustomer:
     handler: src/handler.deleteCustomer
-    description: Disables a customer by username
+    description: Disables a customer by uuid
     reservedConcurrency: 3
     events:
       - httpApi:
-          path: /api/v1/customers/{username}
+          path: /api/v1/customers/{uuid}
           method: delete
     alarms:
       - FunctionErrors
@@ -97,14 +97,25 @@ resources:
       Properties:
         TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
         AttributeDefinitions:
+          - AttributeName: uuid
+            AttributeType: S
           - AttributeName: username
             AttributeType: S
           - AttributeName: email
             AttributeType: S
         KeySchema:
-          - AttributeName: username
+          - AttributeName: uuid
             KeyType: HASH   # partition key
         GlobalSecondaryIndexes:
+          - IndexName: usernameIndex
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
           - IndexName: emailIndex
             KeySchema:
               - AttributeName: email

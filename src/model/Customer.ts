@@ -5,6 +5,7 @@ export type CreateCustomerDTO = {
 };
 
 export type CustomerDB = CreateCustomerDTO & {
+  uuid: string;
   enabled: boolean;
 };
 

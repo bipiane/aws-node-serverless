@@ -2,17 +2,17 @@ import {ScanCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/ScanCo
 import {GetItemInput} from '@aws-sdk/client-dynamodb/dist-types/models/models_0';
 import {PutCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/PutCommand';
 import {UpdateCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/UpdateCommand';
-import {QueryCommandInput} from '@aws-sdk/lib-dynamodb/dist-types/commands/QueryCommand';
+import {QueryCommandInput, QueryCommandOutput} from '@aws-sdk/lib-dynamodb/dist-types/commands/QueryCommand';
 import {GetCommandOutput} from '@aws-sdk/lib-dynamodb/dist-types/commands/GetCommand';
 import {CustomerDB} from '../model/Customer';
 import DynamoDBClient from './dynamodb';
 
 export interface IDatabase {
-  findOne(primaryKey: string, options?: any): Promise<any>;
+  findOne(partitionKey: string, options?: any): Promise<any>;
 
   findAndCount(options?: any): Promise<[any[], number]>;
 
-  query(options?: any): Promise<[any[], number]>;
+  query(options?: any): Promise<any>;
 
   get(options?: any): Promise<any>;
 
@@ -28,11 +28,11 @@ export class CustomerDynamoDB implements IDatabase {
     this.tableName = process.env.DYNAMODB_CUSTOMER_TABLE;
   }
 
-  async findOne(primaryKey: string, options?: Pick<GetItemInput, 'ProjectionExpression'>): Promise<CustomerDB> {
-    const customer = await this.get({
+  async findOne(uuid: string, options?: Pick<GetItemInput, 'ProjectionExpression'>): Promise<CustomerDB> {
+    const customer: GetCommandOutput = await this.get({
       TableName: this.tableName,
       Key: {
-        username: primaryKey,
+        uuid: uuid,
       },
       ProjectionExpression: options?.ProjectionExpression,
     });
@@ -50,6 +50,7 @@ export class CustomerDynamoDB implements IDatabase {
     return [
       result.Items.map((customer: CustomerDB): CustomerDB => {
         return {
+          uuid: customer.uuid,
           username: customer.username,
           email: customer.email,
           name: customer.name,
@@ -60,13 +61,11 @@ export class CustomerDynamoDB implements IDatabase {
     ];
   }
 
-  async query(options?: QueryCommandInput): Promise<[any[], number]> {
-    const result = await DynamoDBClient.query({
+  async query(options?: QueryCommandInput): Promise<QueryCommandOutput> {
+    return await DynamoDBClient.query({
       ...options,
       TableName: this.tableName,
     });
-
-    return [result.Items, result.Count];
   }
 
   async get(options?: any): Promise<GetCommandOutput> {
@@ -80,12 +79,13 @@ export class CustomerDynamoDB implements IDatabase {
     const putParams: PutCommandInput = {
       TableName: this.tableName,
       Item: data,
+      // @TODO ConditionExpression where attribute_exists(uuid) AND attribute_exists(username)?
     };
     await DynamoDBClient.put(putParams);
     return true;
   }
 
-  async update(username: string, updateData: Partial<CustomerDB>): Promise<boolean> {
+  async update(uuid: string, updateData: Partial<CustomerDB>): Promise<boolean> {
     const updateExpressionList: string[] = [];
     const expressionAttributeNames: UpdateCommandInput['ExpressionAttributeNames'] = {};
     const expressionAttributeValues: UpdateCommandInput['ExpressionAttributeValues'] = {};
@@ -104,7 +104,7 @@ export class CustomerDynamoDB implements IDatabase {
     const updateParams: UpdateCommandInput = {
       TableName: this.tableName,
       Key: {
-        username: username,
+        uuid: uuid,
       },
       UpdateExpression: updateExpressionList.join(', '),
       ExpressionAttributeNames: expressionAttributeNames,

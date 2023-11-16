@@ -2,6 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import {CustomerService} from '../services/CustomerService';
 import {CreateCustomerDTO, CustomerDB} from '../model/Customer';
 import {ResponseData, StatusCode} from '../utils/messages';
+import SecurityUtils from '../utils/SecurityUtils';
 
 export class CustomerController {
   private customerService: CustomerService;
@@ -30,16 +31,16 @@ export class CustomerController {
       body.username = body?.username?.toLowerCase();
       body.email = body?.email?.toLowerCase();
 
-      if (await this.customerService.existsCustomer(body.username)) {
-        return new ResponseData({error: `Customer '${body.username}' already created.`}, StatusCode.CONFLICT);
-      }
-
-      const existsEmail = await this.customerService.findCustomer({email: body.email});
-      if (existsEmail && existsEmail.enabled === true) {
-        return new ResponseData({error: `Customer with email '${body.email}' already created.`}, StatusCode.CONFLICT);
+      const existsCustomer = await this.customerService.existsCustomer({username: body.username, email: body.email});
+      if (existsCustomer) {
+        return new ResponseData(
+          {error: `Customer '${body.username} <${body.email}>' already created.`},
+          StatusCode.CONFLICT,
+        );
       }
 
       const newCustomer: CustomerDB = {
+        uuid: SecurityUtils.getRandomUUID(),
         username: body.username,
         email: body.email,
         name: body.name,
@@ -64,26 +65,20 @@ export class CustomerController {
    * @param event
    * @param _context
    */
-  async get(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
-    // Throw test exception
-    if (event?.queryStringParameters?.alert_status === 'alarm') {
-      throw new Error('Error test lambada!');
-    }
-    const username = event.pathParameters.username?.toLowerCase();
+  async show(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
+    const uuid = event.pathParameters.uuid;
 
     try {
-      const customer = await this.customerService.findCustomer({
-        username: username,
-      });
+      const customer = await this.customerService.findCustomer(uuid);
 
       if (!customer) {
-        return new ResponseData({error: `Customer '${username}' not found.`}, StatusCode.NOT_FOUND);
+        return new ResponseData({error: `Customer with uuid '${uuid}' not found.`}, StatusCode.NOT_FOUND);
       }
 
       return new ResponseData(customer);
     } catch (err) {
       console.error(err);
-      return new ResponseData({error: `Error querying customers.`}, StatusCode.INTERNAL_ERROR);
+      return new ResponseData({error: `Error querying a customer.`}, StatusCode.INTERNAL_ERROR);
     }
   }
 
@@ -92,7 +87,7 @@ export class CustomerController {
    * @param _event
    * @param _context
    */
-  async getAll(_event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
+  async index(_event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
     // Throw test exception
     if (_event?.queryStringParameters?.alert_status === 'alarm') {
       throw new Error('Error test lambada!');
@@ -114,15 +109,15 @@ export class CustomerController {
    */
   async delete(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
     try {
-      const username = event.pathParameters.username?.toLowerCase();
+      const uuid = event.pathParameters.uuid;
 
-      const disabled = await this.customerService.disableCustomer(username);
+      const disabled = await this.customerService.disableCustomer(uuid);
 
       if (!disabled) {
-        return new ResponseData({error: `Customer '${username}' not found.`}, StatusCode.NOT_FOUND);
+        return new ResponseData({error: `Customer with uuid '${uuid}' not found.`}, StatusCode.NOT_FOUND);
       }
 
-      return new ResponseData({message: `Customer '${username}' disabled`});
+      return new ResponseData({message: `Customer '${uuid}' disabled`});
     } catch (err) {
       console.error(err);
       return new ResponseData({error: `Error disabling customer.`}, StatusCode.INTERNAL_ERROR);
