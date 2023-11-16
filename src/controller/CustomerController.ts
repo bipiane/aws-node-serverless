@@ -2,6 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import {CustomerService} from '../services/CustomerService';
 import {CreateCustomerDTO, CustomerDB} from '../model/Customer';
 import {ResponseData, StatusCode} from '../utils/messages';
+import SecurityUtils from '../utils/SecurityUtils';
 
 export class CustomerController {
   private customerService: CustomerService;
@@ -12,7 +13,7 @@ export class CustomerController {
 
   /**
    * Creates a new customer.
-   * Usage: curl -X POST -d '{"name":"Peter Parker","email":"peter@parker.com"}' --url http://localhost:3000/api/v1/customers
+   * Usage: curl -X POST -d '{"username":"peter_parker", "name":"Peter Parker","email":"peter@parker.com"}' --url http://localhost:3000/api/v1/customers
    * @param {*} event
    * @param context
    */
@@ -24,16 +25,23 @@ export class CustomerController {
       );
 
       //@TODO schema validation should be done using AWS ApiGateway openapi https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-method-request-validation.html
-      if (!body?.email || !body?.name) {
+      if (!body?.username || !body?.email || !body?.name) {
         return new ResponseData({error: 'Email and name are required.'}, StatusCode.CONFLICT);
       }
+      body.username = body?.username?.toLowerCase();
       body.email = body?.email?.toLowerCase();
 
-      if (await this.customerService.existsCustomer(body.email)) {
-        return new ResponseData({error: `Customer '${body.email}' already created.`}, StatusCode.CONFLICT);
+      const existsCustomer = await this.customerService.existsCustomer({username: body.username, email: body.email});
+      if (existsCustomer) {
+        return new ResponseData(
+          {error: `Customer '${body.username} <${body.email}>' already created.`},
+          StatusCode.CONFLICT,
+        );
       }
 
       const newCustomer: CustomerDB = {
+        uuid: SecurityUtils.getRandomUUID(),
+        username: body.username,
         email: body.email,
         name: body.name,
         enabled: true,
@@ -42,7 +50,7 @@ export class CustomerController {
       await this.customerService.createCustomer(newCustomer);
 
       const bodyResult = {
-        message: `Customer '${body.email}' created.`,
+        message: `Customer '${body.username}' created.`,
       };
 
       return new ResponseData(bodyResult, StatusCode.CREATED);
@@ -53,11 +61,33 @@ export class CustomerController {
   }
 
   /**
+   * Gets a customer by username
+   * @param event
+   * @param _context
+   */
+  async show(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
+    const uuid = event.pathParameters.uuid;
+
+    try {
+      const customer = await this.customerService.findCustomer(uuid);
+
+      if (!customer) {
+        return new ResponseData({error: `Customer with uuid '${uuid}' not found.`}, StatusCode.NOT_FOUND);
+      }
+
+      return new ResponseData(customer);
+    } catch (err) {
+      console.error(err);
+      return new ResponseData({error: `Error querying a customer.`}, StatusCode.INTERNAL_ERROR);
+    }
+  }
+
+  /**
    * Gets all customers
    * @param _event
    * @param _context
    */
-  async getAll(_event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
+  async index(_event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
     // Throw test exception
     if (_event?.queryStringParameters?.alert_status === 'alarm') {
       throw new Error('Error test lambada!');
@@ -73,21 +103,21 @@ export class CustomerController {
   }
 
   /**
-   * Disables a customer by email
+   * Disables a customer by username
    * @param event
    * @param _context
    */
   async delete(event: APIGatewayProxyEvent, _context?: Context): Promise<APIGatewayProxyResult> {
     try {
-      const customerEmail = event.pathParameters.email?.toLowerCase();
+      const uuid = event.pathParameters.uuid;
 
-      await this.customerService.disableCustomer(customerEmail);
+      const disabled = await this.customerService.disableCustomer(uuid);
 
-      const bodyResult = {
-        message: `Customer '${customerEmail}' disabled`,
-      };
+      if (!disabled) {
+        return new ResponseData({error: `Customer with uuid '${uuid}' not found.`}, StatusCode.NOT_FOUND);
+      }
 
-      return new ResponseData(bodyResult);
+      return new ResponseData({message: `Customer '${uuid}' disabled`});
     } catch (err) {
       console.error(err);
       return new ResponseData({error: `Error disabling customer.`}, StatusCode.INTERNAL_ERROR);

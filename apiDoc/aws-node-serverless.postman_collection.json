@@ -7,19 +7,33 @@
   },
   "item": [
     {
+      "name": "Get Customer",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{node-serverless}}/api/v1/customers/82gghvzKbs",
+          "host": ["{{node-serverless}}"],
+          "path": ["api", "v1", "customers", "82gghvzKbs"]
+        }
+      },
+      "response": []
+    },
+    {
       "name": "List Customers",
       "request": {
         "method": "GET",
         "header": [],
         "url": {
-          "raw": "{{node-serverless}}/api/v1/customers?alert_status=alarm",
+          "raw": "{{node-serverless}}/api/v1/customers",
           "host": ["{{node-serverless}}"],
           "path": ["api", "v1", "customers"],
           "query": [
             {
               "key": "alert_status",
               "value": "alarm",
-              "description": "'alarm' to throw an exception"
+              "description": "'alarm' to throw an exception",
+              "disabled": true
             }
           ]
         }
@@ -33,7 +47,7 @@
         "header": [],
         "body": {
           "mode": "raw",
-          "raw": "{\n    \"name\": \"Tony Stark\",\n    \"email\": \"tony@stark.com\"\n}",
+          "raw": "{\n    \"username\": \"tonystark\",\n    \"email\": \"tony@stark.com\",\n    \"name\": \"Tony Stark\"\n}",
           "options": {
             "raw": {
               "language": "json"
@@ -54,9 +68,9 @@
         "method": "DELETE",
         "header": [],
         "url": {
-          "raw": "{{node-serverless}}/api/v1/customers/tony@stark.com",
+          "raw": "{{node-serverless}}/api/v1/customers/jozjZwsNPw",
           "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers", "tony@stark.com"]
+          "path": ["api", "v1", "customers", "jozjZwsNPw"]
         }
       },
       "response": []

@@ -16,10 +16,13 @@ provider:
           Action:
             - "dynamodb:PutItem"
             - "dynamodb:Get*"
+            - "dynamodb:Query"
             - "dynamodb:Scan*"
             - "dynamodb:UpdateItem"
             - "dynamodb:DeleteItem"
-          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}/index/*
 
 functions:
   api:
@@ -44,8 +47,23 @@ functions:
       alias: Live
       alarms:
         - CreateCustomerFunctionErrorsAlarm
+  getCustomer:
+    handler: src/handler.getCustomer
+    description: Gets a customer by uuid
+    reservedConcurrency: 3
+    events:
+      - httpApi:
+          path: /api/v1/customers/{uuid}
+          method: get
+    alarms:
+      - FunctionErrors
+    deploymentSettings:
+      type: Canary10Percent5Minutes
+      alias: Live
+      alarms:
+        - GetCustomerFunctionErrorsAlarm
   getCustomers:
-    handler: src/handler.getAllCustomer
+    handler: src/handler.getAllCustomers
     description: Gets all customers
     reservedConcurrency: 3
     events:
@@ -61,11 +79,11 @@ functions:
         - GetCustomersFunctionErrorsAlarm
   deleteCustomer:
     handler: src/handler.deleteCustomer
-    description: Disables a customer by email
+    description: Disables a customer by uuid
     reservedConcurrency: 3
     events:
       - httpApi:
-          path: /api/v1/customers/{email}
+          path: /api/v1/customers/{uuid}
           method: delete
     alarms:
       - FunctionErrors
@@ -80,14 +98,39 @@ resources:
     CustomerTable:
       Type: AWS::DynamoDB::Table
       Properties:
+        TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
         AttributeDefinitions:
+          - AttributeName: uuid
+            AttributeType: S
+          - AttributeName: username
+            AttributeType: S
           - AttributeName: email
             AttributeType: S
-        BillingMode: PAY_PER_REQUEST
         KeySchema:
-          - AttributeName: email
-            KeyType: HASH
-        TableName: ${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+          - AttributeName: uuid
+            KeyType: HASH   # partition key
+        GlobalSecondaryIndexes:
+          - IndexName: usernameIndex
+            KeySchema:
+              - AttributeName: username
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+          - IndexName: emailIndex
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+            ProvisionedThroughput:
+              ReadCapacityUnits: 1
+              WriteCapacityUnits: 1
+        ProvisionedThroughput:
+          ReadCapacityUnits: 2
+          WriteCapacityUnits: 2
 
 plugins:
   - serverless-plugin-typescript
