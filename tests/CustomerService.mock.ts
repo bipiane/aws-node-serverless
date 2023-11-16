@@ -2,6 +2,7 @@ import {CreateCustomerDTO, CustomerListDB} from '../src/model/Customer';
 
 const createCustomer: CreateCustomerDTO = {
   name: 'Tony Stark',
+  username: 'tonystark',
   email: 'tony@stark.com',
 };
 const createCustomerError = new Error('test error saving customer');
@@ -11,11 +12,13 @@ const findAllCustomers: CustomerListDB = {
   items: [
     {
       name: 'Peter Parker',
+      username: 'peterparker',
       email: 'peter@parker.com',
       enabled: true,
     },
     {
       name: 'Tony Stark',
+      username: 'tonystark',
       email: 'tony@stark.com',
       enabled: false,
     },

@@ -8,6 +8,8 @@ export const createCustomer: Handler = (event: APIGatewayProxyEvent, context: Co
   return customerController.create(event, context);
 };
 
-export const getAllCustomer: Handler = (event: APIGatewayProxyEvent) => customerController.getAll(event);
+export const getCustomer: Handler = (event: APIGatewayProxyEvent) => customerController.get(event);
+
+export const getAllCustomers: Handler = (event: APIGatewayProxyEvent) => customerController.getAll(event);
 
 export const deleteCustomer: Handler = (event: APIGatewayProxyEvent) => customerController.delete(event);

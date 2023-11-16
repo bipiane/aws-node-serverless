@@ -1,4 +1,5 @@
 export type CreateCustomerDTO = {
+  username: string;
   email: string;
   name: string;
 };

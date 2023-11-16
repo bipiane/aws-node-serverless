@@ -24,17 +24,47 @@ export class CustomerService {
   }
 
   /**
-   * Checks if exists customer by email and it's enabled
-   * @param email
+   * Checks if exists customer by username and it's enabled
+   * @param username
    */
-  async existsCustomer(email: string): Promise<boolean> {
+  async existsCustomer(username: string): Promise<boolean> {
     try {
-      const customer = await this.database.findOne(email, {
+      const customer = await this.database.findOne(username, {
         ProjectionExpression: 'enabled',
       });
       return customer && customer.enabled === true;
     } catch (err) {
-      console.error(err);
+      console.error('Error CustomerService.existsCustomer: ', err);
+      throw err;
+    }
+  }
+
+  async findCustomer(search: {username?: string; email?: string}): Promise<CustomerDB> {
+    try {
+      let customer = null;
+      if (search.username) {
+        customer = (
+          await this.database.get({
+            Key: {
+              username: search.username,
+            },
+          })
+        ).Item;
+      } else if (search.email) {
+        customer = (
+          await this.database.query({
+            IndexName: 'emailIndex',
+            KeyConditionExpression: 'email = :v_email',
+            ExpressionAttributeValues: {
+              ':v_email': search.email,
+            },
+          })
+        )[0][0];
+      }
+
+      return customer;
+    } catch (err) {
+      console.error('Error CustomerService.findCustomer: ', err);
       throw err;
     }
   }
@@ -58,13 +88,12 @@ export class CustomerService {
   }
 
   /**
-   * Disables a customer by email
-   * @param email
-   * @protected
+   * Disables a customer by username
+   * @param username
    */
-  async disableCustomer(email: string): Promise<boolean> {
+  async disableCustomer(username: string): Promise<boolean> {
     try {
-      await this.database.update(email, {enabled: false});
+      await this.database.update(username, {enabled: false});
       return true;
     } catch (err) {
       console.error(err);
