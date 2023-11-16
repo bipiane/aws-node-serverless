@@ -16,10 +16,13 @@ provider:
           Action:
             - "dynamodb:PutItem"
             - "dynamodb:Get*"
+            - "dynamodb:Query"
             - "dynamodb:Scan*"
             - "dynamodb:UpdateItem"
             - "dynamodb:DeleteItem"
-          Resource: arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+          Resource:
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
+            - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}/index/*
 
 functions:
   api:
