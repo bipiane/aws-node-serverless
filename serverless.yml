@@ -9,6 +9,8 @@ provider:
   region: sa-east-1 #São Paulo
   environment:
     DYNAMODB_CUSTOMER_TABLE: ${self:service}-customerTable-${sls:stage}
+    user_pool_id: { Ref: UserPool }
+    client_id: { Ref: UserClient }
   iam:
     role:
       statements:
@@ -23,23 +25,58 @@ provider:
           Resource:
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}
             - arn:aws:dynamodb:${aws:region}:${aws:accountId}:table/${self:provider.environment.DYNAMODB_CUSTOMER_TABLE}/index/*
+        - Effect: "Allow"
+          Action:
+            - "cognito-idp:AdminInitiateAuth"
+            - "cognito-idp:AdminCreateUser"
+            - "cognito-idp:AdminSetUserPassword"
+          Resource: "*"
 
 functions:
   api:
     handler: src/index.handler
     reservedConcurrency: 1
     events:
-      - httpApi:
+      - http:
           path: /
           method: get
+          cors: true
+  loginUser:
+    handler: src/handler.login
+    description: Login User
+    reservedConcurrency: 3
+    events:
+      - http:
+          path: /user/login
+          method: post
+          cors: true
+  signupUser:
+    handler: src/handler.signup
+    description: Signup User
+    reservedConcurrency: 3
+    events:
+      - http:
+          path: /user/signup
+          method: post
+          cors: true
   createCustomer:
     handler: src/handler.createCustomer
     description: Creates a new customer
     reservedConcurrency: 3
     events:
-      - httpApi:
+      - http:
           path: /api/v1/customers
           method: post
+          cors: true
+          authorizer:
+            name: PrivateAuthorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
     alarms:
       - FunctionErrors
     deploymentSettings:
@@ -52,9 +89,19 @@ functions:
     description: Gets a customer by uuid
     reservedConcurrency: 3
     events:
-      - httpApi:
+      - http:
           path: /api/v1/customers/{uuid}
           method: get
+          cors: true
+          authorizer:
+            name: PrivateAuthorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
     alarms:
       - FunctionErrors
     deploymentSettings:
@@ -67,9 +114,19 @@ functions:
     description: Gets all customers
     reservedConcurrency: 3
     events:
-      - httpApi:
+      - http:
           path: /api/v1/customers
           method: get
+          cors: true
+          authorizer:
+            name: PrivateAuthorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
     alarms:
       - FunctionErrors
     deploymentSettings:
@@ -82,9 +139,19 @@ functions:
     description: Disables a customer by uuid
     reservedConcurrency: 3
     events:
-      - httpApi:
+      - http:
           path: /api/v1/customers/{uuid}
           method: delete
+          cors: true
+          authorizer:
+            name: PrivateAuthorizer
+            type: COGNITO_USER_POOLS
+            arn:
+              Fn::GetAtt:
+                - UserPool
+                - Arn
+            claims:
+              - email
     alarms:
       - FunctionErrors
     deploymentSettings:
@@ -131,6 +198,30 @@ resources:
         ProvisionedThroughput:
           ReadCapacityUnits: 2
           WriteCapacityUnits: 2
+
+    UserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: serverless-auth-pool
+        Schema:
+          - Name: email
+            Required: true
+            Mutable: true
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 6
+        AutoVerifiedAttributes: [ "email" ]
+
+    UserClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: user-pool-ui
+        GenerateSecret: false
+        UserPoolId: { Ref: UserPool }
+        AccessTokenValidity: 5
+        IdTokenValidity: 5
+        ExplicitAuthFlows:
+          - "ADMIN_NO_SRP_AUTH"
 
 plugins:
   - serverless-plugin-typescript

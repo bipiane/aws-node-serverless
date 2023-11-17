@@ -1,6 +1,16 @@
 import {Handler, Context, APIGatewayProxyEvent} from 'aws-lambda';
 
 import {CustomerController} from './controller/CustomerController';
+import {AuthController} from './controller/AuthController';
+
+const authController = new AuthController();
+
+export const signup: Handler = (event: APIGatewayProxyEvent, context: Context) => {
+  return authController.signup(event, context);
+};
+export const login: Handler = (event: APIGatewayProxyEvent, context: Context) => {
+  return authController.login(event, context);
+};
 
 const customerController = new CustomerController();
 

@@ -7,73 +7,192 @@
   },
   "item": [
     {
-      "name": "Get Customer",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{node-serverless}}/api/v1/customers/82gghvzKbs",
-          "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers", "82gghvzKbs"]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "List Customers",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "{{node-serverless}}/api/v1/customers",
-          "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers"],
-          "query": [
-            {
-              "key": "alert_status",
-              "value": "alarm",
-              "description": "'alarm' to throw an exception",
-              "disabled": true
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"ivanpianetti23@gmail.com\",\n    \"password\": \"1234567asdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{node-serverless}}/user/signup",
+              "host": ["{{node-serverless}}"],
+              "path": ["user", "signup"]
             }
-          ]
-        }
-      },
-      "response": []
-    },
-    {
-      "name": "Create Customers",
-      "request": {
-        "method": "POST",
-        "header": [],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n    \"username\": \"tonystark\",\n    \"email\": \"tony@stark.com\",\n    \"name\": \"Tony Stark\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
+          },
+          "response": []
         },
-        "url": {
-          "raw": "{{node-serverless}}/api/v1/customers",
-          "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers"]
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [""],
+                "type": "text/javascript"
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "var data = JSON.parse(responseBody);",
+                  "pm.environment.unset(\"access_token\");",
+                  "pm.environment.set(\"access_token\", data.token);",
+                  ""
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"ivanpianetti23@gmail.com\",\n    \"password\": \"1234567asdf\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{node-serverless}}/user/login",
+              "host": ["{{node-serverless}}"],
+              "path": ["user", "login"]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     },
     {
-      "name": "Delete Customer",
-      "request": {
-        "method": "DELETE",
-        "header": [],
-        "url": {
-          "raw": "{{node-serverless}}/api/v1/customers/jozjZwsNPw",
-          "host": ["{{node-serverless}}"],
-          "path": ["api", "v1", "customers", "jozjZwsNPw"]
+      "name": "api",
+      "item": [
+        {
+          "name": "Get Customer",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{node-serverless}}/api/v1/customers/ynqfGGpFPo",
+              "host": ["{{node-serverless}}"],
+              "path": ["api", "v1", "customers", "ynqfGGpFPo"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "List Customers",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{node-serverless}}/api/v1/customers",
+              "host": ["{{node-serverless}}"],
+              "path": ["api", "v1", "customers"],
+              "query": [
+                {
+                  "key": "alert_status",
+                  "value": "alarm",
+                  "description": "'alarm' to throw an exception",
+                  "disabled": true
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Create Customers",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{access_token}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"tonystark2\",\n    \"email\": \"tony2@stark.com\",\n    \"name\": \"Tony Stark\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{node-serverless}}/api/v1/customers",
+              "host": ["{{node-serverless}}"],
+              "path": ["api", "v1", "customers"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Delete Customer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json",
+                "type": "text"
+              },
+              {
+                "key": "Authorization",
+                "value": "{{access_token}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{node-serverless}}/api/v1/customers/ynqfGGpFPo",
+              "host": ["{{node-serverless}}"],
+              "path": ["api", "v1", "customers", "ynqfGGpFPo"]
+            }
+          },
+          "response": []
         }
-      },
-      "response": []
+      ]
     }
   ],
   "event": [
