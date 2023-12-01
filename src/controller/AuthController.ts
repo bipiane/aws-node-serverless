@@ -2,6 +2,7 @@ import {APIGatewayProxyEvent, APIGatewayProxyResult, Context} from 'aws-lambda';
 import {CognitoIdentityProvider} from '@aws-sdk/client-cognito-identity-provider';
 import {AdminCreateUserCommandInput} from '@aws-sdk/client-cognito-identity-provider/dist-types/commands/AdminCreateUserCommand';
 import {AdminInitiateAuthCommandInput} from '@aws-sdk/client-cognito-identity-provider/dist-types/commands/AdminInitiateAuthCommand';
+import {AdminSetUserPasswordCommandInput} from '@aws-sdk/client-cognito-identity-provider/dist-types/commands/AdminSetUserPasswordCommand';
 import {ResponseData, StatusCode} from '../utils/messages';
 
 const cognito = new CognitoIdentityProvider();
@@ -20,9 +21,9 @@ export class AuthController {
       }
 
       const {email, password} = JSON.parse(event.body);
-      const {user_pool_id} = process.env;
+      const {USER_POOL_ID} = process.env;
       const params: AdminCreateUserCommandInput = {
-        UserPoolId: user_pool_id,
+        UserPoolId: USER_POOL_ID,
         Username: email,
         UserAttributes: [
           {
@@ -38,9 +39,9 @@ export class AuthController {
       };
       const response = await cognito.adminCreateUser(params);
       if (response.User) {
-        const paramsForSetPass = {
+        const paramsForSetPass: AdminSetUserPasswordCommandInput = {
           Password: password,
-          UserPoolId: user_pool_id,
+          UserPoolId: USER_POOL_ID,
           Username: email,
           Permanent: true,
         };
@@ -66,11 +67,11 @@ export class AuthController {
       }
 
       const {email, password} = JSON.parse(event.body);
-      const {user_pool_id, client_id} = process.env;
+      const {USER_POOL_ID, CLIENT_ID} = process.env;
       const params: AdminInitiateAuthCommandInput = {
         AuthFlow: 'ADMIN_NO_SRP_AUTH',
-        UserPoolId: user_pool_id,
-        ClientId: client_id,
+        UserPoolId: USER_POOL_ID,
+        ClientId: CLIENT_ID,
         AuthParameters: {
           USERNAME: email,
           PASSWORD: password,
