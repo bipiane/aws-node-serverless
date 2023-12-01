@@ -8,6 +8,7 @@
 - TypeScript
 - AWS Lambda
 - AWS DynamoDB
+- AWS Cognito User Pool
 - Serverless Framework
 - Docker for Local DynamoDB
 - Code Style with Prettier
